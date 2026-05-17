@@ -2,3 +2,5 @@ venv/
 *.env
 dataset/
 runs/
+__pycache__/
+*.pyc
