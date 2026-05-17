@@ -1,36 +1,48 @@
 import os
+import json
 import pandas as pd
+from ultralytics import YOLO
 from scripts.yolov8_training import count_objects
 from config import MODEL_PATH
 import random
 
-random.seed(10)
-
-
 class TrafficController:
     def __init__(self, alpha=1, sim_percent = 0):
-        self.ad_density = {}
+        self.ad_density = {
+            "A": 0,
+            "B": 0,
+            "C": 0,
+            "D": 0,
+        }
         self.alpha = alpha
         self.sim_percent = sim_percent
+        self.model = YOLO(MODEL_PATH)
+        with open("saved_image_path.json") as f:
+            self.saved_images = json.loads(f.read())
 
     def _return_density_range(self, density):
         diff = int(density * self.sim_percent / 100)
         return random.randint(density - diff, density + diff)
 
+    def _return_random_image(self):
+        return {
+            "A": random.choice(self.saved_images['A']),
+            "B": random.choice(self.saved_images['B']),
+            "C": random.choice(self.saved_images['C']),
+            "D": random.choice(self.saved_images['D'])
+        }
+    
+    def _return_actual_density(self):
+        image_files = self._return_random_image()
+        return {
+            "A": count_objects(model=self.model, image_path=image_files["A"]),
+            "B": count_objects(model=self.model, image_path=image_files["B"]),
+            "C": count_objects(model=self.model, image_path=image_files["C"]),
+            "D": count_objects(model=self.model, image_path=image_files["D"]),
+        }
+
     def evaluate_cycle(self, images_dir):
-        actual_density = {}
-        valid_extensions = ('.jpg', '.jpeg', '.png')
-        image_files = [f for f in os.listdir(images_dir) if f.lower().endswith(valid_extensions)]
-        
-        for img_file in image_files:
-            lane = os.path.splitext(img_file)[0]
-            img_path = os.path.join(images_dir, img_file)
-            
-            density = count_objects(MODEL_PATH, img_path) 
-            actual_density[lane] = self._return_density_range(density)
-            
-            if lane not in self.ad_density:
-                self.ad_density[lane] = 0
+        actual_density = self._return_actual_density()
 
         # Capture state prior to mutation to ensure logging math aligns with execution logic
         applied_ad_weight = self.ad_density.copy()
