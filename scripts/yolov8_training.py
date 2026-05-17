@@ -2,6 +2,7 @@ from ultralytics import YOLO
 import torch
 import os
 from config import YOLO_MODEL_NAME
+import json 
 
 DATA_PATH = "./dataset/VehicleCount/data.yaml"
 
@@ -46,10 +47,11 @@ def predict(model_path, test_images_dir):
 
     print(f"Check the folder: {results[0].save_dir}")
 
-def count_objects(model_path, image_path):
+def count_objects(model_path = None, image_path = None, model = None):
     # Load the model
     # model = YOLO(YOLO_MODEL_NAME)
-    model = YOLO(model_path)
+    if not model:
+        model = YOLO(model_path)
 
     # Run inference
     results = model(image_path, conf=0.3, iou=0.65, verbose=False)
@@ -67,14 +69,35 @@ def count_objects(model_path, image_path):
     
     return object_count
 
+
+def create_image_json(model, images_dir, output_path, verbose=False):
+    d = {
+        "A": [],
+        "B": [],
+        "C": [],
+        "D": [],
+    }
+    for i, image_path in enumerate(os.listdir(images_dir)):
+        full_image_path = os.path.join(images_dir, image_path)
+        count = count_objects(model=model, image_path=full_image_path)
+        if count < 10: d["B"].append(full_image_path)
+        elif count < 30: d["C"].append(full_image_path)
+        elif count < 50: d["A"].append(full_image_path)
+        else: d["D"].append(full_image_path)
+        if verbose:
+            if i % 100 == 0:
+                print(f"Processed {i} files")
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(d, f, indent=4)
+
 if __name__ == "__main__":
     print(f'GPU Available: {torch.cuda.is_available()}')
     print(torch.__version__)
     # train_yolov8()
     # evaluate_yolov8("runs/detect/train-2/weights/best.pt")
     # predict("runs/detect/train-2/weights/best.pt", "test_img.jpg")
-    count = count_objects("runs/detect/train-2/weights/best.pt", "test_img.jpg")
-    print(count)
+    # count = count_objects("runs/detect/train-2/weights/best.pt", "test_img.jpg")
+    # print(count)
     # img_num = 24
     # for i in os.listdir("./frames"):
     #     img_num = i[-2:]
@@ -85,3 +108,6 @@ if __name__ == "__main__":
     #         image_path = os.path.join(image_dir, img_file)
     #         count = count_objects(image_path, "runs/obb/train10/weights/best.pt")
     #         print(f"Image: {img_file}, Object Count: {count}")
+    model = YOLO("runs/detect/train-2/weights/best.pt")
+    create_image_json(model, "dataset/VehicleCount/train/images", "saved_image_path.json", verbose=True)
+    
