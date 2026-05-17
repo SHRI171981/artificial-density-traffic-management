@@ -11,7 +11,7 @@ TARGET_DIR = "./test_images"
 # Initialize global layout constraints
 st.set_page_config(layout="wide", page_title="Autonomous Traffic Controller")
 
-def render_lane(lane_id, is_green, physical, artificial, total, target_dir):
+def render_lane(lane_id, is_green, physical, artificial, total, img_path):
     """
     Renders a miniaturized lane control panel with an integrated stateful traffic light.
     Utilizes HTML/CSS flexbox for maximum vertical and horizontal space efficiency.
@@ -38,11 +38,11 @@ def render_lane(lane_id, is_green, physical, artificial, total, target_dir):
                     Lane {lane_id}
                 </div>
                 <div style="display: flex; justify-content: space-between;">
-                    <span>P: {physical}</span>
-                    <span>A: {artificial}</span>
+                    <span>P: {int(physical)}</span>
+                    <span>A: {int(artificial)}</span>
                 </div>
                 <div style="font-weight: bold; margin-top: 2px;">
-                    Total: {total}
+                    Total: {int(total)}
                 </div>
             </div>
         </div>
@@ -53,7 +53,6 @@ def render_lane(lane_id, is_green, physical, artificial, total, target_dir):
     # Retrieve and render the raw camera capture associated with the lane identifier
     valid_extensions = ['.jpg', '.jpeg', '.png']
     for ext in valid_extensions:
-        img_path = os.path.join(target_dir, f"{lane_id}{ext}")
         if os.path.exists(img_path):
             st.image(img_path, use_container_width=True)
             break
@@ -72,7 +71,7 @@ if st.button("Start 25-Cycle Simulation", type="primary"):
 
     for cycle in range(1, 26):
         # Execute backend sequence to return the current state matrix
-        matrix = controller.evaluate_cycle(TARGET_DIR)
+        matrix, image_files = controller.evaluate_cycle(TARGET_DIR)
         green_lane = matrix['green_lane']
         
         # Redraw the spatial grid layout
@@ -92,7 +91,7 @@ if st.button("Start 25-Cycle Simulation", type="primary"):
                                 physical=matrix['actual_counts'].get("A", 0), 
                                 artificial=matrix['applied_ad_weight'].get("A", 0), 
                                 total=matrix['effective_totals'].get("A", 0),
-                                target_dir=TARGET_DIR)
+                                img_path=image_files["A"])
                 
                 st.write("") 
                 
@@ -104,7 +103,7 @@ if st.button("Start 25-Cycle Simulation", type="primary"):
                                 physical=matrix['actual_counts'].get("D", 0), 
                                 artificial=matrix['applied_ad_weight'].get("D", 0), 
                                 total=matrix['effective_totals'].get("D", 0),
-                                target_dir=TARGET_DIR)
+                                img_path=image_files["D"])
                 with r2_col2:
                     # Render center intersection marker scaled to the miniaturized layout
                     st.markdown("<div style='height: 100%; display: flex; align-items: center; justify-content: center; text-align: center;'><h1 style='color: gray; font-size: 30px; margin: 0;'>X</h1></div>", unsafe_allow_html=True)
@@ -114,7 +113,7 @@ if st.button("Start 25-Cycle Simulation", type="primary"):
                                 physical=matrix['actual_counts'].get("B", 0), 
                                 artificial=matrix['applied_ad_weight'].get("B", 0), 
                                 total=matrix['effective_totals'].get("B", 0),
-                                target_dir=TARGET_DIR)
+                                img_path=image_files["B"])
 
                 st.write("") 
 
@@ -126,7 +125,7 @@ if st.button("Start 25-Cycle Simulation", type="primary"):
                                 physical=matrix['actual_counts'].get("C", 0), 
                                 artificial=matrix['applied_ad_weight'].get("C", 0), 
                                 total=matrix['effective_totals'].get("C", 0),
-                                target_dir=TARGET_DIR)
+                                img_path=image_files["C"])
                 
         # Suspend thread execution to ensure the matrix shift is visually perceptible
         time.sleep(1.0)

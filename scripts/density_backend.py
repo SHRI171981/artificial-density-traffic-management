@@ -39,10 +39,10 @@ class TrafficController:
             "B": count_objects(model=self.model, image_path=image_files["B"]),
             "C": count_objects(model=self.model, image_path=image_files["C"]),
             "D": count_objects(model=self.model, image_path=image_files["D"]),
-        }
+        }, image_files
 
     def evaluate_cycle(self, images_dir):
-        actual_density = self._return_actual_density()
+        actual_density, image_files = self._return_actual_density()
 
         # Capture state prior to mutation to ensure logging math aligns with execution logic
         applied_ad_weight = self.ad_density.copy()
@@ -65,7 +65,7 @@ class TrafficController:
             'actual_counts': actual_density,
             'applied_ad_weight': applied_ad_weight, 
             'effective_totals': total_density
-        }
+        }, image_files
 
 if __name__ == "__main__":
     TARGET_DIR = "./test_images"
