@@ -11,12 +11,14 @@ werkzeug>=2.3.0
 ultralytics>=8.0.0
 torch>=2.0.0
 torchvision>=0.15.0
-python-dotenv
+
 
 # Additional utilities
 matplotlib>=3.7.0
 seaborn>=0.12.0
 tqdm>=4.65.0
+python-dotenv
+streamlit
 
 # Note: tkinter usually comes with Python installation
 # Note: For Google Colab, install google-colab package separately if needed
