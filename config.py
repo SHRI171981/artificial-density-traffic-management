@@ -5,3 +5,4 @@ load_dotenv()
 
 YOLO_MODEL_NAME=os.environ.get("YOLO_MODEL_NAME")
 MODEL_PATH = "runs/detect/train-2/weights/best.pt"
+TARGET_DIR = "./test_images"
