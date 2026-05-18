@@ -5,16 +5,13 @@ import streamlit as st
 # Import core stateful logic directly from the specified backend module
 from scripts.density_backend import TrafficController
 
-# Global configuration paths
-TARGET_DIR = "./test_images"
-
 # Initialize global layout constraints
 st.set_page_config(layout="wide", page_title="Autonomous Traffic Controller")
 
 def render_lane(lane_id, is_green, physical, artificial, total, img_path):
     """
     Renders a miniaturized lane control panel with an integrated stateful traffic light.
-    Utilizes HTML/CSS flexbox for maximum vertical and horizontal space efficiency.
+    Utilizes HTML/CSS flexbsox for maximum vertical and horizontal space efficiency.
     """
     text_color = "#28a745" if is_green else "#dc3545"
     bg_color = "#e6ffe6" if is_green else "#ffe6e6"
@@ -71,7 +68,7 @@ if st.button("Start 25-Cycle Simulation", type="primary"):
 
     for cycle in range(1, 26):
         # Execute backend sequence to return the current state matrix
-        matrix, image_files = controller.evaluate_cycle(TARGET_DIR)
+        matrix, image_files = controller.evaluate_cycle()
         green_lane = matrix['green_lane']
         
         # Redraw the spatial grid layout
@@ -104,9 +101,9 @@ if st.button("Start 25-Cycle Simulation", type="primary"):
                                 artificial=matrix['applied_ad_weight'].get("D", 0), 
                                 total=matrix['effective_totals'].get("D", 0),
                                 img_path=image_files["D"])
-                with r2_col2:
-                    # Render center intersection marker scaled to the miniaturized layout
-                    st.markdown("<div style='height: 100%; display: flex; align-items: center; justify-content: center; text-align: center;'><h1 style='color: gray; font-size: 30px; margin: 0;'>X</h1></div>", unsafe_allow_html=True)
+                # with r2_col2:
+                #     # Render center intersection marker scaled to the miniaturized layout
+                #     st.markdown("<div style='height: 100%; display: flex; align-items: center; justify-content: center; text-align: center;'><h1 style='color: gray; font-size: 30px; margin: 0;'>X</h1></div>", unsafe_allow_html=True)
                 with r2_col3:
                     render_lane("B", 
                                 is_green=(green_lane == "B"), 
@@ -128,6 +125,6 @@ if st.button("Start 25-Cycle Simulation", type="primary"):
                                 img_path=image_files["C"])
                 
         # Suspend thread execution to ensure the matrix shift is visually perceptible
-        time.sleep(1.0)
+        time.sleep(2.5)
         
     st.success("Simulation Complete")

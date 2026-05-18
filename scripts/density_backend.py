@@ -41,7 +41,7 @@ class TrafficController:
             "D": count_objects(model=self.model, image_path=image_files["D"]),
         }, image_files
 
-    def evaluate_cycle(self, images_dir):
+    def evaluate_cycle(self):
         actual_density, image_files = self._return_actual_density()
 
         # Capture state prior to mutation to ensure logging math aligns with execution logic
